@@ -1,8 +1,10 @@
+module(..., package.seeall)
+
 require 'io'
 
 function ReadFile(filename, openFlag)
     local file = io.open(filename, openFlag)
-    local content = file.read('*a')
+    local content = file:read('*a')
     file:close()
     return content
 end
