@@ -6,16 +6,13 @@ require 'handler'
 LOG_TAG = 'MAIN'
 
 local function sendCommand(cmd)
-    command.SendData(command.UART_1, string.char(2))
-    command.SendData(command.UART_1, cmd)
-    command.SendData(command.UART_1, string.char(2))
+    command.SendPacket(command.UART_1, cmd)
 end
 
 local function phoneReady()
     local commandJson = {}
     commandJson['action'] = 'phone_ready'
-    local cmdStr = json.encode(commandJson)
-    sendCommand(cmdStr)
+    command.SendNotify(command.UART_1, commandJson)
 end
 
 local function onNewCommand(cmd)
@@ -25,6 +22,7 @@ local function onNewCommand(cmd)
         res = {}
     end
     res['seqNo'] = cmd['seqNo']
+    res['type'] = 1
     local resPacket = json.encode(res)
     log.debug(LOG_TAG, 'command res=', resPacket)
     sendCommand(resPacket)

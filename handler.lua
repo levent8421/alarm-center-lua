@@ -1,5 +1,7 @@
 require 'phone'
 require 'tts'
+require 'command'
+require 'misc'
 
 module(..., package.seeall)
 
@@ -7,15 +9,25 @@ LOG_TAG = 'COMMAND_HANDLER'
 
 local commandHanlders = {}
 
+local function sendNotify(notify)
+    command.SendNotify(command.UART_1, notify)
+end
+
 local function isEmpty(text)
     if text and #text>0 then return false else return true end
 end
 
 local function onCallSuccess()
+    local notify = {}
+    notify['action'] = 'call_connected'
+    sendNotify(notify)
     phone.PlayAudio('/ldata/', 'alipay.amr', true)
 end
 
 local function onCallDisconnected()
+    local notify = {}
+    notify['action'] = 'call_disconnected'
+    sendNotify(notify)
     tts.Play('挂机', 7)
 end
 
@@ -38,6 +50,9 @@ commandHanlders['call'] = function (packet)
 end
 
 local function onSmsSendSuccess()
+    local notify = {}
+    notify['action'] = 'sms_sent'
+    sendNotify(notify)
     log.info(LOG_TAG, 'sms send success!')
 end
 
@@ -80,6 +95,21 @@ commandHanlders['tts_play'] = function(packet)
         res['msg'] = text
         res['vol'] = vol
     end
+    return res
+end
+
+local function readState()
+    local res = {}
+    res['phoneReady'] = phone.Ready()
+    res['sn'] = misc.getSn()
+    res['imei'] = misc.getImei()
+    return res
+end
+
+commandHanlders['read_state'] = function (packet)
+    local res = readState()
+    res['code'] = 0
+    res['msg'] = 'OK'
     return res
 end
 

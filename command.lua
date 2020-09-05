@@ -13,7 +13,7 @@ local commandListener = nil
 local uartRecvBuffer = ''
 
 local function decodeCommand(data)
-    jsonData, result, error = json.decode(data)
+    local jsonData, result, error = json.decode(data)
     log.debug(LOG_TAG, data, jsonData, result, error)
     if result and type(jsonData)=='table' then
         return true, jsonData
@@ -24,13 +24,13 @@ local function decodeCommand(data)
 end
 
 local function appendData(data)
-    charCode = string.byte(data)
+    local charCode = string.byte(data)
     if charCode == 2 then
         log.debug(LOG_TAG, 'PACKAGE START')
         uartRecvBuffer = ''
     elseif charCode == 3 then
         log.debug(LOG_TAG, 'PACKAGE END', uartRecvBuffer)
-        success, cmd = decodeCommand(uartRecvBuffer)
+        local success, cmd = decodeCommand(uartRecvBuffer)
         if success then
             commandListener(cmd)
         end
@@ -62,3 +62,17 @@ function Init(callback)
 end
 
 function SendData(uartId, data) uart.write(uartId, data) end
+
+function SendPacket(port, cmd)
+    SendData(port, string.char(2))
+    SendData(port, cmd)
+    SendData(port, string.char(3))
+end
+
+function SendNotify(port, obj)
+    obj['seqNo'] = -1
+    obj['type'] = 0
+    local cmd = json.encode(obj)
+    SendPacket(port, cmd)
+end
+

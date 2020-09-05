@@ -67,3 +67,7 @@ end
 function SendSms(phone, msg, callback)
     sms.send(phone, msg, callback)
 end
+
+function Ready()
+    return isReady
+end
