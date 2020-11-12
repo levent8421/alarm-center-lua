@@ -13,6 +13,8 @@ local function phoneReady()
     local commandJson = {}
     commandJson['action'] = 'phone_ready'
     command.SendNotify(command.UART_1, commandJson)
+    log.debug(LOG_TAG, 'Phone Ready')
+    tts.Play('电话就绪', 7)
 end
 
 local function onNewCommand(cmd)
